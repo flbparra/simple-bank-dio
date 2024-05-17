@@ -1,6 +1,9 @@
 from abc import ABC, ABCMeta, abstractmethod, abstractproperty, abstractclassmethod
 from datetime import datetime
 
+
+
+
 class Account():
     def __init__(self, number: int, client) -> None:
         self._balance = 0
@@ -55,7 +58,30 @@ class Account():
         else: 
             print("Invalid deposit amount!")
             return False
+
+class AccountIterator():
+    def __init__(self, accounts) -> None:
+        self.accounts = accounts
+        self.index_account = 0
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
         
+        try:
+            account = self.accounts[self.index_account]
+            return f"""\
+                Agency:\t{account.agency}
+                Number:\t\t{account.number}
+                Name:\t{account.name}
+                Balance:\t\t{account.balance}
+                """
+        except IndexError:
+            raise StopIteration
+    
+        finally :
+            self.index_account+= 1   
 class CheckingAccount(Account):  
     def __init__(self, number: int, client) -> None:
         super().__init__(number, client)
@@ -106,8 +132,14 @@ class Client():
     def __init__(self, address: str) -> None:
         self.address = address
         self.accounts = []
+        self.index_account = 0
     
     def carry_out_transaction(self, account: Account, transaction):
+        
+        if len(account.history.transactions_day()) >= 10:
+            print("### ERROR: You exceeded the limit of transactions!")
+            return
+            
         return transaction.register(account)
     
     def add_account(self,account: Account):
@@ -134,12 +166,29 @@ class History():
             {
                 "type": transaction.__class__.__name__,
                 "value": transaction.value,
-                "date": datetime.now().strftime(
-                    "%d-%m-%Y %H:%M:%s"
+                "date": datetime.now().replace(microsecond=0).strftime(
+                    "%d-%m-%Y %H:%M:%S"
                 )
             }
         )
 
+    def generate_report(self, type_transaction=None):
+        for transaction in self._transactions:
+            if type_transaction is None or transaction["type"].lower() == type_transaction.lower():
+                yield transaction
+
+    def transactions_day(self):
+        date_now = datetime.utcnow().date() # horario atual
+        
+        transactions = []
+
+        for transaction in self._transactions:        
+            date_transaction = datetime.strptime(transaction["date"],  "%d-%m-%Y %H:%M:%S").date()   # data em string,converter a data da transaction!
+            if date_now == date_transaction:
+                transactions.append(transaction)
+        
+        return transactions 
+                 
 class Transaction(ABC):
     
     @property
@@ -181,7 +230,16 @@ class Deposit(Transaction):
         
         if status_transaction:
             account.history.add_transaction(self)
-            
+ 
+ 
+def log_date(func):
+    def date_action(*args, **kwargs):
+        resultado = func(*args, **kwargs)
+        date=  datetime.now().replace(microsecond=0)
+        print(f"Action {func.__name__.upper()} carried out successfully! {date} !")
+    return date_action        
+
+@log_date  
 def withdrawal(clients:list):
     
     cpf = input("Please enter a valid cpf! ")
@@ -200,9 +258,8 @@ def withdrawal(clients:list):
     if not acc:
         return
     
-    client.carry_out_transaction(acc, transaction)
+    client.carry_out_transaction(acc, transaction)  
     
-
 def display_bank_statement(clients: list):
     
     cpf = input("Please enter a valid CPF of client: ")
@@ -229,12 +286,13 @@ def display_bank_statement(clients: list):
     
     else:
         for transaction in transactions:
-            statement += f'\n{transaction["type"]}: \n\tR$ {transaction["value"]}.'
+            statement += f'\n{transaction["date"]}\n{transaction["type"]}: \n\tR$ {transaction["value"]}.'
     
     print(statement)
     print(f'\nSaldo:\n{acc.balance:.2f}')
     print("########### STATEMENT ###########")
-    
+
+@log_date    
 def deposit(clients:list):
     
     cpf = input("Please enter a valid CPF of client: ")
@@ -257,7 +315,7 @@ def deposit(clients:list):
     
     client.carry_out_transaction(acc, transaction)
 
-
+@log_date  
 def new_account(number_account: int, clients: list, accounts_list: list):
     
     cpf = input("Enter the CPF for inquiry: ")
@@ -274,7 +332,8 @@ def new_account(number_account: int, clients: list, accounts_list: list):
     client.accounts.append(account) 
     
     print("SUCESS: User valid! New account created!")
-    
+ 
+@log_date     
 def new_client(clients: list):
     
     cpf = input("Please enter a valid CPF: ")
@@ -308,12 +367,10 @@ def retrieve_account(client : Client):
     
     return client.accounts[0]
 
-def list_accounts(accounts):
-    
-    for account in accounts:
-        print(20 * "##")
+def list_accounts(accounts): 
+    for account in AccountIterator(accounts):
+        print(50 * "#")
         print(str(account))
-        
 
 def main():
     
