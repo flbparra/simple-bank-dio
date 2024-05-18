@@ -277,16 +277,17 @@ def display_bank_statement(clients: list):
 
     print("########### STATEMENT ###########")
     
-    transactions = acc.history.transaction
+    transactions = False
 
     statement = ""
     
+    for transaction in acc.history.generate_report():
+            transactions =  True
+            statement += f'\n{transaction["date"]}\n{transaction["type"]}: \n\tR$ {transaction["value"]}.'
+    
+    
     if not transactions:
         statement+= "No transactions were carried out!"
-    
-    else:
-        for transaction in transactions:
-            statement += f'\n{transaction["date"]}\n{transaction["type"]}: \n\tR$ {transaction["value"]}.'
     
     print(statement)
     print(f'\nSaldo:\n{acc.balance:.2f}')
