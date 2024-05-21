@@ -1,0 +1,7 @@
+[2024-05-21 11:48:36] Function 'new_client' executed with arguments ([<IndividualClient: (000)>],) and {}.Return None
+[2024-05-21 11:49:14] Function 'new_account' executed with arguments (1, [<IndividualClient: (000)>], [<CheckingAccount: ('0001', '1', 'dsadsa')>]) and {}.Return None
+[2024-05-21 11:49:20] Function 'deposit' executed with arguments ([<IndividualClient: (000)>],) and {}.Return None
+[2024-05-21 11:49:42] Function 'deposit' executed with arguments ([<IndividualClient: (000)>],) and {}.Return None
+[2024-05-21 11:52:46] Function 'new_client' executed with arguments ([<IndividualClient: (000)>],) and {}.Return None
+[2024-05-21 11:52:49] Function 'new_account' executed with arguments (1, [<IndividualClient: (000)>], []) and {}.Return None
+[2024-05-21 11:53:33] Function 'new_client' executed with arguments ([<IndividualClient: (000)>],) and {}.Return None

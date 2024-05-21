@@ -1,7 +1,6 @@
 from abc import ABC, ABCMeta, abstractmethod, abstractproperty, abstractclassmethod
 from datetime import datetime
-
-
+from pathlib import Path
 
 
 class Account():
@@ -120,6 +119,9 @@ class CheckingAccount(Account):
             print(f"SUCESS: withdrawal = R$ {value:.2f}")
             return super().withdrawal(value)
         
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}: ('{self.agency}', '{self.number}', '{self.client.name}')>"
+        
     def __str__(self) -> str:
         return  f"""\
             Agency:\t{self._agency}
@@ -151,6 +153,10 @@ class IndividualClient(Client):
         self.cpf = cpf
         self.name = name
         self.date_birth = date_birth
+        
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}: ({self.cpf})>"
+    
 
 class History():
     
@@ -234,9 +240,19 @@ class Deposit(Transaction):
  
 def log_date(func):
     def date_action(*args, **kwargs):
-        resultado = func(*args, **kwargs)
+        result = func(*args, **kwargs)
         date=  datetime.now().replace(microsecond=0)
+        
+        with open("log.txt", "a") as file:
+            
+            file.write(
+                f"[{date}] Function '{func.__name__}' executed with arguments {args} and {kwargs}." 
+                f"Return {result}\n" 
+            )
+
+        
         print(f"Action {func.__name__.upper()} carried out successfully! {date} !")
+        return result
     return date_action        
 
 @log_date  
